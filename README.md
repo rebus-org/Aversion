@@ -6,7 +6,7 @@ An `AssemblyInfo.cs` patcher that creates a .NET-compatible version out of a [Se
 
 Go to the command line:
 
-    > aversion.exe -help patch
+    > aversion -help patch
 
     Generates a .cs file with version attributes with an acceptable .NET version number
 
@@ -48,6 +48,26 @@ And that is how it is done.
 
 # Example
 
-Let's say that we have an `AssemblyInfo_Template.cs` residing in out project. We have changed the "Build action" of this file to from "Compile" (the default for .cs files)
-to "None", which means that the template is not compiled into our DLL.
+Let's say that we have an `AssemblyInfo.cs` residing in our project. You probably have that.
+
+Now we have change the "Build action" of this file from "Compile" (the default for .cs files) to "None", which means that the template is not compiled into our DLL.
+
+Then we change the two assembly-level attributes from the default
+
+    [assembly: AssemblyVersion("1.0.0.0")]
+    [assembly: AssemblyFileVersion("1.0.0.0")]
+
+to
+
+    [assembly: AssemblyVersion("$version$")]
+    [assembly: AssemblyFileVersion("$version$")]
+
+The `$version$` is where we would like a .NET-compatible version string to be injected.
+
+The you go to the command line and do something like this:
+
+    > aversion patch -token "$version$" -in Properties\AssemblyInfo.cs -out Properties\AssemblyInfo_Patch.cs -ver 1.4.5-alpha5
+
+which will replace `$token$` with `1.4.5.0` and store the output in `AssemblyInfo_Patch.cs`. Last thing to do is to include `AssemblyInfo_Patch.cs` into your project,
+so it gets compiled into the DLL instead of the original `AssemblyInfo.cs`.
 
