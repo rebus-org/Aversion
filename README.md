@@ -2,6 +2,8 @@
 
 An `AssemblyInfo.cs` patcher that creates a .NET-compatible version out of a [SemVer](http://semver.org/).
 
+# Help
+
 Go to the command line:
 
     > aversion.exe -help patch
@@ -41,3 +43,11 @@ OK, so we call the tool with the `patch` command, specifying
 * `-in` - path to a template file to use - e.g. `AssemblyInfo_Template.cs`
 * `-out` - path to the file to generate - e.g. `AssemblyInfo.cs`
 * `-token` - replacement token, which will be replaced with the .NET-compatible version
+
+And that is how it is done.
+
+# Example
+
+Let's say that we have an `AssemblyInfo_Template.cs` residing in out project. We have changed the "Build action" of this file to from "Compile" (the default for .cs files)
+to "None", which means that the template is not compiled into our DLL.
+
