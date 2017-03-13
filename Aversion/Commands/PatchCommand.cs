@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using GoCommando;
+using Polly;
 using Semver;
 
 namespace Aversion.Commands
@@ -55,6 +57,14 @@ namespace Aversion.Commands
         }
 
         void WriteOutputFile(string outputFileText)
+        {
+            var policy = Policy.Handle<IOException>()
+                .WaitAndRetry(Enumerable.Range(0, 5).Select(n => TimeSpan.FromSeconds(n)), (exception, delay) => Print($"Could not write {OutputFile}: {exception.Message} - waiting {delay} before trying again..."));
+
+            policy.Execute(() => InnerWrite(outputFileText));
+        }
+
+        void InnerWrite(string outputFileText)
         {
             try
             {
