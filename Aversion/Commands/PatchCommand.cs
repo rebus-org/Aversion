@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using GoCommando;
 using Polly;
+using Polly.Retry;
 using Semver;
 
 namespace Aversion.Commands
@@ -58,10 +59,11 @@ namespace Aversion.Commands
 
         void WriteOutputFile(string outputFileText)
         {
-            var policy = Policy.Handle<IOException>()
-                .WaitAndRetry(Enumerable.Range(0, 5).Select(n => TimeSpan.FromSeconds(n)), (exception, delay) => Print($"Could not write {OutputFile}: {exception.Message} - waiting {delay} before trying again..."));
+            var sleepDurations = Enumerable.Range(0, 5).Select(n => TimeSpan.FromSeconds(n));
 
-            policy.Execute(() => InnerWrite(outputFileText));
+            Policy.Handle<IOException>()
+                .WaitAndRetry(sleepDurations, (exception, delay) => Print($"Could not write {OutputFile}: {exception.Message} - waiting {delay} before trying again..."))
+                .Execute(() => InnerWrite(outputFileText));
         }
 
         void InnerWrite(string outputFileText)
