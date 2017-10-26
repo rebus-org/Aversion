@@ -45,6 +45,8 @@ namespace Aversion.Commands
 
             var dotnetVersion = GetDotnetVersion(version);
 
+            Print($"Changing '{Token}' in '{InputFile}' to '{dotnetVersion}' => '{OutputFile}'...");
+
             var outputFileText = inputFileText.Replace(Token, dotnetVersion.ToString());
 
             WriteOutputFile($@"/*
@@ -54,23 +56,18 @@ namespace Aversion.Commands
 
 {outputFileText}");
 
-            Print($"Changed '{Token}' in '{InputFile}' to '{dotnetVersion}' => '{OutputFile}'");
+            Print($"Changed '{Token}' in '{InputFile}' to '{dotnetVersion}' => '{OutputFile}'!");
         }
 
         void WriteOutputFile(string outputFileText)
         {
             var sleepDurations = Enumerable.Range(0, 5).Select(n => TimeSpan.FromSeconds(n));
 
-            Policy.Handle<IOException>()
-                .WaitAndRetry(sleepDurations, (exception, delay) => Print($"Could not write {OutputFile}: {exception.Message} - waiting {delay} before trying again..."))
-                .Execute(() => InnerWrite(outputFileText));
-        }
-
-        void InnerWrite(string outputFileText)
-        {
             try
             {
-                File.WriteAllText(OutputFile, outputFileText);
+                Policy.Handle<IOException>()
+                    .WaitAndRetry(sleepDurations, (exception, delay) => Print($"Could not write {OutputFile}: {exception.Message} - waiting {delay} before trying again..."))
+                    .Execute(() => InnerWrite(outputFileText));
             }
             catch (Exception exception)
             {
@@ -80,6 +77,11 @@ namespace Aversion.Commands
 
 Got the following exception: {exception}");
             }
+        }
+
+        void InnerWrite(string outputFileText)
+        {
+            File.WriteAllText(OutputFile, outputFileText);
         }
 
         static void Print(string text)
